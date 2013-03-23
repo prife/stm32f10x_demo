@@ -24,6 +24,21 @@ if rtconfig.PLATFORM == 'iar':
 	env.Replace(ARFLAGS = [''])
 	env.Replace(LINKCOM = ['$LINK $SOURCES $LINKFLAGS -o $TARGET --map project.map'])
 
+def mdk_create_tmpfile(tmpfile, objs):
+    cmdline =''
+    tmpfile = file(tmpfile, 'w')
+    for item in objs:
+        # print type(item), os.path.basename(str(item))
+        cmdline += os.path.normpath(str(item))
+        cmdline += ' '
+
+    tmpfile.write(cmdline)
+    tmpfile.close();
+    return
+
+if rtconfig.PLATFORM == 'armcc':
+    env["LINKCOM"] = "$LINK -o $TARGET $LINKFLAGS --via tmpcmd.txt"
+
 Export('RTT_ROOT')
 Export('rtconfig')
 
@@ -37,6 +52,9 @@ if GetDepend('RT_USING_RTGUI'):
     objs = objs + SConscript(RTT_ROOT + '/examples/gui/SConscript', variant_dir='build/examples/gui', duplicate=0)
 
 # build program 
+if rtconfig.PLATFORM == 'armcc':
+	mdk_create_tmpfile('tmpcmd.txt', objs)
+
 prog = env.Program(TARGET, objs)
 
 # end building 
