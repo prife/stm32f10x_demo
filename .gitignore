@@ -1,0 +1,12 @@
+# ºöÂÔÄ³Ğ©ÎÄ¼ş
+obj/
+lis/
+build/
+*.txt
+*.axf
+*.map
+*.elf
+*.pyc
+*.bin
+.sconsign.dblite
+*.swp

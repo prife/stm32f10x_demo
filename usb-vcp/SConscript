@@ -1,0 +1,32 @@
+from building import *
+
+cwd = GetCurrentDir()
+src	= Glob('*.c')
+# The set of source files associated with this SConscript file.
+
+usb = Split("""
+usb_desc.c
+usb_endp.c
+usb_istr.c
+usb_prop.c
+usb_pwr.c
+vcp.c
+""")
+
+usb_fs_driver = Split('''
+STM32_USB-FS-Device_Driver/src/usb_core.c
+STM32_USB-FS-Device_Driver/src/usb_init.c
+STM32_USB-FS-Device_Driver/src/usb_int.c
+STM32_USB-FS-Device_Driver/src/usb_mem.c
+STM32_USB-FS-Device_Driver/src/usb_regs.c
+STM32_USB-FS-Device_Driver/src/usb_sil.c
+''')
+
+path = [cwd, 
+    cwd + '/STM32_USB-FS-Device_Driver/inc']
+
+src = usb + usb_fs_driver
+
+group = DefineGroup('usb_vcp', src, depend = ['RT_USING_STM32_USB_VCP'], CPPPATH = path)
+
+Return('group')

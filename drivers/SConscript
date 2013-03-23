@@ -1,0 +1,19 @@
+import rtconfig
+Import('RTT_ROOT')
+from building import *
+
+src_bsp = ['board.c', 'stm32f10x_it.c']
+src_drv = ['rtc.c', 'usart.c', 'serial.c']
+
+if GetDepend('RT_USING_LWIP'):
+	src_drv += ['enc28j60.c'] + ['dm9000a.c']
+
+if GetDepend('RT_USING_DFS') == True and GetDepend('RT_USING_DFS_ELMFAT') == True:
+	src_drv += ['msd.c']
+
+src = src_bsp + src_drv
+CPPPATH = [ GetCurrentDir() ]
+CPPDEFINES = []
+group = DefineGroup('drivers', src, depend = [''], CPPPATH = CPPPATH, CPPDEFINES = CPPDEFINES)
+
+Return('group')

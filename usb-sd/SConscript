@@ -1,0 +1,44 @@
+import rtconfig
+Import('RTT_ROOT')
+from building import *
+
+# get current directory
+cwd = GetCurrentDir()
+
+# The set of source files associated with this SConscript file.
+usb = Split("""
+stm32_usb_it.c
+hw_config.c
+mass_mal.c
+memory.c
+scsi_data.c
+usb_bot.c
+usb_desc.c
+usb_endp.c
+usb_istr.c
+usb_prop.c
+usb_pwr.c
+usb_scsi.c
+""")
+
+usb_fs_driver = Split('''
+STM32_USB-FS-Device_Driver/src/usb_core.c
+STM32_USB-FS-Device_Driver/src/usb_init.c
+STM32_USB-FS-Device_Driver/src/usb_int.c
+STM32_USB-FS-Device_Driver/src/usb_mem.c
+STM32_USB-FS-Device_Driver/src/usb_regs.c
+STM32_USB-FS-Device_Driver/src/usb_sil.c
+''')
+
+# add for startup script 
+path = [cwd + '/inc', 
+    cwd + '/STM32_USB-FS-Device_Driver/inc']
+
+src = usb + usb_fs_driver
+CPPDEFINES = []
+group = DefineGroup('STM32_USB',          \
+		src,                                    \
+		depend = ['RT_USING_STM32_USB_SDCARD'], \
+		CPPPATH = path, CPPDEFINES = CPPDEFINES)
+
+Return('group')
