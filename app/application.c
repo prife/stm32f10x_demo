@@ -50,117 +50,41 @@ extern unsigned int Image$$ER_IROM1$$Limit;
 
 void rt_init_thread_entry(void *parameter)
 {
+    rt_platform_init();
+
+    /* initialization RT-Thread Components */
+    rt_components_init();
+
     /* Filesystem Initialization */
-#ifdef RT_USING_DFS
-    {
-        /* init the device filesystem */
-        dfs_init();
 
+#ifdef RT_USING_DFS
 #ifdef RT_USING_DFS_ELMFAT
-#ifdef RT_USING_DFS
-        /* init sdcard driver */
-#if STM32_USE_SDIO
-        rt_hw_sdcard_init();
-#else
-        rt_hw_msd_init();
-#endif
-#endif
-        /* init the elm chan FatFs filesystam*/
-        elm_init();
+	/* mount sd card fat partition 0 as root directory */
+	if (dfs_mount("sd0", "/", "elm", 0, 0) == 0)
+		rt_kprintf("File System initialized!\n");
+	else
+		rt_kprintf("File System initialzation failed!\n");
+#endif /* RT_USING_DFS_ELMFAT */
 
-        /* mount sd card fat partition 1 as root directory */
-        if (dfs_mount("sd0", "/", "elm", 0, 0) == 0)
-        {
-            rt_kprintf("File System initialized!\n");
-        }
-        else
-            rt_kprintf("File System initialzation failed!\n");
-#endif
-#ifdef RT_USING_MTD_NAND
-        rt_hw_mtd_nand_init();
-        dfs_uffs_init();
 
 #ifdef RT_USING_DFS_UFFS
-        /* mount nand flash partition 0 as root directory */
-        if (dfs_mount("nand0", "/", "uffs", 0, 0) == 0)
-            rt_kprintf("uffs initialized!\n");
-        else
-            rt_kprintf("uffs initialzation failed!\n");
-#endif
+	/* mount nand flash partition 0 as root directory */
+	if (dfs_mount("nand0", "/", "uffs", 0, 0) == 0)
+		rt_kprintf("uffs initialized!\n");
+	else
+		rt_kprintf("uffs initialzation failed!\n");
+#endif /* RT_USING_DFS_UFFS */
 
-#endif
+#if defined(RT_USING_LWIP) && defined(RT_USING_DFS_NFS)
+	/* NFSv3 Initialization */
+	rt_kprintf("begin init NFSv3 File System ...\n");
+	if (dfs_mount(RT_NULL, "/", "nfs", 0, RT_NFS_HOST_EXPORT) == 0)
+		rt_kprintf("NFSv3 File System initialized!\n");
+	else
+		rt_kprintf("NFSv3 File System initialzation failed!\n");
+#endif /* NFS */
 
-    }
-#endif
-
-    /* LwIP Initialization */
-#ifdef RT_USING_LWIP
-    {
-        extern void lwip_sys_init(void);
-
-        /* register ethernetif device */
-        eth_system_device_init();
-
-#ifdef STM32F10X_CL
-        rt_hw_stm32_eth_init();
-#else
-        /* STM32F103 */
-#if STM32_ETH_IF == 0
-        rt_hw_enc28j60_init();
-#elif STM32_ETH_IF == 1
-        rt_hw_dm9000_init();
-#endif
-#endif
-
-        /* re-init device driver */
-        rt_device_init_all();
-
-        /* init lwip system */
-        lwip_sys_init();
-        rt_kprintf("TCP/IP initialized!\n");
-    }
-#endif
-
-#if defined(RT_USING_DFS) && defined(RT_USING_LWIP) && defined(RT_USING_DFS_NFS)
-    {
-        /* NFSv3 Initialization */
-        rt_kprintf("begin init NFSv3 File System ...\n");
-        nfs_init();
-
-        if (dfs_mount(RT_NULL, "/", "nfs", 0, RT_NFS_HOST_EXPORT) == 0)
-            rt_kprintf("NFSv3 File System initialized!\n");
-        else
-            rt_kprintf("NFSv3 File System initialzation failed!\n");
-    }
-#endif
-
-#if defined(RT_USING_RTGUI)
-    {
-        extern void rtgui_system_server_init(void);
-        extern void rt_hw_lcd_init();
-        extern void rtgui_touch_hw_init(void);
-
-        rt_device_t lcd;
-
-        /* init lcd */
-        rt_hw_lcd_init();
-
-        /* init touch panel */
-        //rtgui_touch_hw_init();
-
-        /* re-init device driver */
-        rt_device_init_all();
-
-        /* find lcd device */
-        lcd = rt_device_find("lcd");
-
-        /* set lcd device as rtgui graphic driver */
-        rtgui_graphic_set_device(lcd);
-
-        /* init rtgui system server */
-        rtgui_system_server_init();
-    }
-#endif /* #ifdef RT_USING_RTGUI */
+#endif /* DFS */
 }
 
 int rt_application_init()
