@@ -579,18 +579,18 @@ void ntest(void)
         memset(RxBuffer, 0, sizeof(RxBuffer));
         memset(spare, 0x0, 64);
 
-        if (nandflash_writepage(RT_NULL,n,TxBuffer,2048, Spare, 60) != RT_EOK)
+        if (nandflash_writepage(RT_NULL,n,TxBuffer,2048, Spare, 64) != RT_EOK)
         {
             RT_ASSERT(0);
         }
         /* Read back the written data */
-        nandflash_readpage(RT_NULL,n,RxBuffer, 2048,spare,60);
+        nandflash_readpage(RT_NULL,n,RxBuffer, 2048,spare,64);
 
         if( memcmp( (char*)TxBuffer, (char*)RxBuffer, NAND_PAGE_SIZE ) != 0 )
         {
             RT_ASSERT(0);
         }
-        if( memcmp( (char*)Spare, (char*)spare, 60 ) != 0 )
+        if( memcmp( (char*)Spare+4, (char*)spare+4, 60 ) != 0 )
         {
             RT_ASSERT(0);
         }
@@ -614,14 +614,14 @@ void nread(int page)
 	rt_kprintf("data:\n");
     for (index = 0; index < 2048; index ++)
     {
-        rt_kprintf("0x%X,",RxBuffer[index]);
+        rt_kprintf("%02X,",RxBuffer[index]);
 		if ((index+1) % 16 == 0)
 			rt_kprintf("\n");
     }
 	rt_kprintf("\nspare:\n");
     for (index = 0; index < 64; index ++)
     {
-        rt_kprintf("[%X]", Spare[index]);
+        rt_kprintf("[%02X]", Spare[index]);
 		if ((index+1) % 16 == 0)
 			rt_kprintf("\n");
     }
