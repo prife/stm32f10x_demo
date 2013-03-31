@@ -80,6 +80,9 @@ void rt_hw_msd_init(void);
 void rt_hw_enc28j60_init(void);
 void rt_hw_dm9000_init(void);
 
+void iwdg_init(void);
+int iwdg_reset_check(void);
+int iwdg_feed(void);
 #endif
 
 // <<< Use Configuration Wizard in Context Menu >>>

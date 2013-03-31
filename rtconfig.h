@@ -9,6 +9,8 @@
 //#define RT_USING_STM32_USB_SDCARD
 //#define RT_USING_STM32_USB_VCP
 
+#define RT_USING_IWDG
+
 #if defined(RT_USING_STM32_USB_SDCARD) && defined(RT_USING_STM32_USB_VCP)
 #error "only one of RT_USING_STM32_USB_SDCARD and RT_USING_STM32_USB_VCP should be enable"
 #endif
