@@ -85,6 +85,13 @@ void rt_init_thread_entry(void *parameter)
 #endif /* NFS */
 
 #endif /* DFS */
+#ifdef RT_USING_STM32_USB_VCP
+    rt_hw_vcp_init();
+    finsh_set_device(RT_USB_VCP_DEVICE);
+    rt_console_set_device(RT_USB_VCP_DEVICE);
+#endif
+
+    //rt_hw_echo_init();
 }
 
 int rt_application_init()

@@ -8,6 +8,7 @@
 
 //#define RT_USING_STM32_USB_SDCARD
 //#define RT_USING_STM32_USB_VCP
+#define RT_USB_VCP_DEVICE "usbvcp"
 
 #if defined(RT_USING_STM32_USB_SDCARD) && defined(RT_USING_STM32_USB_VCP)
 #error "only one of RT_USING_STM32_USB_SDCARD and RT_USING_STM32_USB_VCP should be enable"
@@ -75,7 +76,13 @@
 #define RT_USING_CONSOLE
 /* the buffer size of console*/
 #define RT_CONSOLEBUF_SIZE  128
+
+#ifdef  RT_USING_STM32_USB_VCP
+#define RT_CONSOLE_DEVICE_NAME	RT_USB_VCP_DEVICE
+#else
 #define RT_CONSOLE_DEVICE_NAME	"uart1"
+#endif
+
 
 /* SECTION: component options */
 #define RT_USING_COMPONENTS_INIT
