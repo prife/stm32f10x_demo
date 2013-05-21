@@ -15,6 +15,9 @@
 #include <rtdevice.h>
 #include "stm32f10x.h"
 #include "k9f_nand.h"
+#ifdef RT_USING_DFS_UFFS
+#include "uffs/uffs_flash.h"
+#endif
 #include <string.h>
 
 //#define NAND_DEBUG    rt_kprintf
@@ -26,8 +29,13 @@
 #define NAND_LARGE    0 /* k9f1g08 0;  k9f2g08: 1 */
 
 static struct stm32_nand _device;
-
+#if RT_CONFIG_UFFS_ECC_MODE == UFFS_ECC_SOFT
+#define ECC_SIZE     0
+#elif RT_CONFIG_UFFS_ECC_MODE == UFFS_ECC_HW_AUTO
 #define ECC_SIZE     4
+#else
+#error "please set ECC_SIZE a valid value"
+#endif
 
 rt_inline void nand_cmd(rt_uint8_t cmd)
 {
@@ -272,6 +280,7 @@ static rt_err_t nandflash_readpage(struct rt_mtd_nand_device* device, rt_off_t p
         gecc = FSMC_GetECC(FSMC_NAND_BANK);
         FSMC_NANDECCCmd(FSMC_NAND_BANK,DISABLE);
 
+#if RT_CONFIG_UFFS_ECC_MODE == UFFS_ECC_HW_AUTO
         if (data_len == 2048)
         {
             for (index = 0; index < ECC_SIZE; index ++)
@@ -296,6 +305,7 @@ static rt_err_t nandflash_readpage(struct rt_mtd_nand_device* device, rt_off_t p
 
             goto _exit;
         }
+#endif
 
         result = RT_MTD_EOK;
     }
@@ -360,6 +370,7 @@ static rt_err_t nandflash_writepage(struct rt_mtd_nand_device* device, rt_off_t 
         gecc = FSMC_GetECC(FSMC_NAND_BANK);
         FSMC_NANDECCCmd(FSMC_NAND_BANK,DISABLE);
 
+#if RT_CONFIG_UFFS_ECC_MODE == UFFS_ECC_HW_AUTO
         NAND_DEBUG("<wecc %X>",gecc);
         if (data_len == 2048)
         {
@@ -368,6 +379,7 @@ static rt_err_t nandflash_writepage(struct rt_mtd_nand_device* device, rt_off_t 
             nand_write8((uint8_t)(gecc >> 16));
             nand_write8((uint8_t)(gecc >> 24));
         }
+#endif
 
         nand_cmd(NAND_CMD_PAGEPROGRAM_TRUE);
         nand_waitready();
