@@ -9,9 +9,9 @@
 #include "usb_desc.h"
 #include "usb_pwr.h"
 
-#define USB_DISCONNECT                      GPIOG
-#define USB_DISCONNECT_PIN                  GPIO_Pin_6
-#define RCC_APB2Periph_GPIO_DISCONNECT      RCC_APB2Periph_GPIOG
+#define USB_DISCONNECT                      GPIOF
+#define USB_DISCONNECT_PIN                  GPIO_Pin_11
+#define RCC_APB2Periph_GPIO_DISCONNECT      RCC_APB2Periph_GPIOF
 
 static void IntToUnicode (uint32_t value , uint8_t *pbuf , uint8_t len);
 
