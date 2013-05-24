@@ -384,7 +384,7 @@ static rt_err_t nandflash_writepage(struct rt_mtd_nand_device* device, rt_off_t 
         nand_cmd(NAND_CMD_PAGEPROGRAM_TRUE);
         nand_waitready();
 
-        if (nand_readstatus() & 0x01 == 1)
+        if (nand_readstatus() & 0x01)
         {
             result = -RT_MTD_EIO;
             goto _exit;
@@ -415,7 +415,7 @@ static rt_err_t nandflash_writepage(struct rt_mtd_nand_device* device, rt_off_t 
         nand_cmd(NAND_CMD_PAGEPROGRAM_TRUE);
         nand_waitready();
 
-        if (nand_readstatus() & 0x01 == 1)
+        if (nand_readstatus() & 0x01)
             result = -RT_MTD_EIO;
         else
             result = RT_MTD_EOK;
@@ -449,7 +449,7 @@ rt_err_t nandflash_eraseblock(struct rt_mtd_nand_device* device, rt_uint32_t blo
 
     nand_waitready();
 
-    if (nand_readstatus() & 0x01 == 1)
+    if (nand_readstatus() & 0x01)
         result = -RT_MTD_EIO;
     rt_mutex_release(&_device.lock);
 
@@ -490,7 +490,7 @@ static rt_err_t nandflash_pagecopy(struct rt_mtd_nand_device *device, rt_off_t s
     nand_cmd(NAND_CMD_COPYBACKPGM_TRUE);
 
     nand_waitready();
-    if ((nand_readstatus() & 0x01) == 0x01)
+    if (nand_readstatus() & 0x01)
         result = -RT_MTD_EIO;
 
     rt_mutex_release(&_device.lock);
