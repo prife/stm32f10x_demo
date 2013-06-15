@@ -191,6 +191,20 @@ void rt_hw_board_init()
     /* init adc  */
     adc_init();
 #endif
+
+#ifdef RT_USING_IWDG
+    iwdg_init();
+    if (iwdg_reset_check())
+        rt_kprintf("iwdg reset\n");
+#endif
 }
 
+#ifdef RT_USING_FINSH
+#include <finsh.h>
+void reset(void)
+{
+    NVIC_SystemReset();
+}
+FINSH_FUNCTION_EXPORT(reset, reset system)
+#endif
 /*@}*/

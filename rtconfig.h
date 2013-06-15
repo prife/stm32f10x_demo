@@ -8,6 +8,9 @@
 
 //#define RT_USING_STM32_USB_SDCARD
 //#define RT_USING_STM32_USB_VCP
+#define RT_USB_VCP_DEVICE "usbvcp"
+
+#define RT_USING_IWDG
 
 #if defined(RT_USING_STM32_USB_SDCARD) && defined(RT_USING_STM32_USB_VCP)
 #error "only one of RT_USING_STM32_USB_SDCARD and RT_USING_STM32_USB_VCP should be enable"
@@ -75,7 +78,13 @@
 #define RT_USING_CONSOLE
 /* the buffer size of console*/
 #define RT_CONSOLEBUF_SIZE  128
+
+#ifdef  RT_USING_STM32_USB_VCP
+#define RT_CONSOLE_DEVICE_NAME	RT_USB_VCP_DEVICE
+#else
 #define RT_CONSOLE_DEVICE_NAME	"uart1"
+#endif
+
 
 /* SECTION: component options */
 #define RT_USING_COMPONENTS_INIT
@@ -115,7 +124,9 @@
 /* DFS: UFFS nand file system options */
 #define RT_USING_DFS_UFFS
 /* configuration for uffs, more to see dfs_uffs.h and uffs_config.h */
-#define RT_CONFIG_UFFS_ECC_MODE  UFFS_ECC_HW_AUTO
+#define RT_CONFIG_UFFS_ECC_MODE    UFFS_ECC_HW_AUTO
+                                 //UFFS_ECC_SOFT
+                                 //UFFS_ECC_HW_AUTO
 /* enable this ,you need provide a mark_badblock/check_block function */
 /* #define RT_UFFS_USE_CHECK_MARK_FUNCITON */
 

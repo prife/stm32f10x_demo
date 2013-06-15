@@ -106,13 +106,22 @@ void SVC_Handler(void)
 void DebugMon_Handler(void)
 {
 }
-
+#ifdef RT_USING_IWDG
+static int iwdg_feed_flag=1;
+#endif
 void SysTick_Handler(void)
 {
     extern void rt_hw_timer_handler(void);
+#ifdef RT_USING_IWDG
+    if (iwdg_feed_flag)
+        iwdg_feed();
+#endif
     rt_hw_timer_handler();
 }
-
+#if defined(RT_USING_IWDG) && defined(RT_USING_FINSH)
+#include <finsh.h>
+FINSH_VAR_EXPORT(iwdg_feed_flag, finsh_type_int, iwdg for finsh)
+#endif
 /******************************************************************************/
 /*                 STM32F10x Peripherals Interrupt Handlers                   */
 /*  Add here the Interrupt Handler for the used peripheral(s) (PPP), for the  */

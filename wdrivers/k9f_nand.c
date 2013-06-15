@@ -15,6 +15,9 @@
 #include <rtdevice.h>
 #include "stm32f10x.h"
 #include "k9f_nand.h"
+#ifdef RT_USING_DFS_UFFS
+#include "uffs/uffs_flash.h"
+#endif
 #include <string.h>
 
 //#define NAND_DEBUG    rt_kprintf
@@ -26,8 +29,13 @@
 #define NAND_LARGE    0 /* k9f1g08 0;  k9f2g08: 1 */
 
 static struct stm32_nand _device;
-
+#if RT_CONFIG_UFFS_ECC_MODE == UFFS_ECC_SOFT
+#define ECC_SIZE     0
+#elif RT_CONFIG_UFFS_ECC_MODE == UFFS_ECC_HW_AUTO
 #define ECC_SIZE     4
+#else
+#error "please set ECC_SIZE a valid value"
+#endif
 
 rt_inline void nand_cmd(rt_uint8_t cmd)
 {
@@ -272,6 +280,7 @@ static rt_err_t nandflash_readpage(struct rt_mtd_nand_device* device, rt_off_t p
         gecc = FSMC_GetECC(FSMC_NAND_BANK);
         FSMC_NANDECCCmd(FSMC_NAND_BANK,DISABLE);
 
+#if RT_CONFIG_UFFS_ECC_MODE == UFFS_ECC_HW_AUTO
         if (data_len == 2048)
         {
             for (index = 0; index < ECC_SIZE; index ++)
@@ -296,6 +305,7 @@ static rt_err_t nandflash_readpage(struct rt_mtd_nand_device* device, rt_off_t p
 
             goto _exit;
         }
+#endif
 
         result = RT_MTD_EOK;
     }
@@ -360,6 +370,7 @@ static rt_err_t nandflash_writepage(struct rt_mtd_nand_device* device, rt_off_t 
         gecc = FSMC_GetECC(FSMC_NAND_BANK);
         FSMC_NANDECCCmd(FSMC_NAND_BANK,DISABLE);
 
+#if RT_CONFIG_UFFS_ECC_MODE == UFFS_ECC_HW_AUTO
         NAND_DEBUG("<wecc %X>",gecc);
         if (data_len == 2048)
         {
@@ -368,11 +379,12 @@ static rt_err_t nandflash_writepage(struct rt_mtd_nand_device* device, rt_off_t 
             nand_write8((uint8_t)(gecc >> 16));
             nand_write8((uint8_t)(gecc >> 24));
         }
+#endif
 
         nand_cmd(NAND_CMD_PAGEPROGRAM_TRUE);
         nand_waitready();
 
-        if (nand_readstatus() & 0x01 == 1)
+        if (nand_readstatus() & 0x01)
         {
             result = -RT_MTD_EIO;
             goto _exit;
@@ -403,7 +415,7 @@ static rt_err_t nandflash_writepage(struct rt_mtd_nand_device* device, rt_off_t 
         nand_cmd(NAND_CMD_PAGEPROGRAM_TRUE);
         nand_waitready();
 
-        if (nand_readstatus() & 0x01 == 1)
+        if (nand_readstatus() & 0x01)
             result = -RT_MTD_EIO;
         else
             result = RT_MTD_EOK;
@@ -437,7 +449,7 @@ rt_err_t nandflash_eraseblock(struct rt_mtd_nand_device* device, rt_uint32_t blo
 
     nand_waitready();
 
-    if (nand_readstatus() & 0x01 == 1)
+    if (nand_readstatus() & 0x01)
         result = -RT_MTD_EIO;
     rt_mutex_release(&_device.lock);
 
@@ -478,7 +490,7 @@ static rt_err_t nandflash_pagecopy(struct rt_mtd_nand_device *device, rt_off_t s
     nand_cmd(NAND_CMD_COPYBACKPGM_TRUE);
 
     nand_waitready();
-    if ((nand_readstatus() & 0x01) == 0x01)
+    if (nand_readstatus() & 0x01)
         result = -RT_MTD_EIO;
 
     rt_mutex_release(&_device.lock);
@@ -579,18 +591,18 @@ void ntest(void)
         memset(RxBuffer, 0, sizeof(RxBuffer));
         memset(spare, 0x0, 64);
 
-        if (nandflash_writepage(RT_NULL,n,TxBuffer,2048, Spare, 60) != RT_EOK)
+        if (nandflash_writepage(RT_NULL,n,TxBuffer,2048, Spare, 64) != RT_EOK)
         {
             RT_ASSERT(0);
         }
         /* Read back the written data */
-        nandflash_readpage(RT_NULL,n,RxBuffer, 2048,spare,60);
+        nandflash_readpage(RT_NULL,n,RxBuffer, 2048,spare,64);
 
         if( memcmp( (char*)TxBuffer, (char*)RxBuffer, NAND_PAGE_SIZE ) != 0 )
         {
             RT_ASSERT(0);
         }
-        if( memcmp( (char*)Spare, (char*)spare, 60 ) != 0 )
+        if( memcmp( (char*)Spare+4, (char*)spare+4, 60 ) != 0 )
         {
             RT_ASSERT(0);
         }
@@ -614,14 +626,14 @@ void nread(int page)
 	rt_kprintf("data:\n");
     for (index = 0; index < 2048; index ++)
     {
-        rt_kprintf("0x%X,",RxBuffer[index]);
+        rt_kprintf("%02X,",RxBuffer[index]);
 		if ((index+1) % 16 == 0)
 			rt_kprintf("\n");
     }
 	rt_kprintf("\nspare:\n");
     for (index = 0; index < 64; index ++)
     {
-        rt_kprintf("[%X]", Spare[index]);
+        rt_kprintf("[%02X]", Spare[index]);
 		if ((index+1) % 16 == 0)
 			rt_kprintf("\n");
     }
