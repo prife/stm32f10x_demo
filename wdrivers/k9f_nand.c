@@ -537,7 +537,7 @@ void rt_hw_mtd_nand_init(void)
     _partition[0].pages_per_block = 64;
     _partition[0].block_total = 256;
     _partition[0].oob_size    = 64;
-    _partition[0].oob_free    = 60;
+    _partition[0].oob_free    = 60; //oob_free = oob_size - ecc_size
     _partition[0].block_start = 0;
     _partition[0].block_end   = 255;
     _partition[0].ops         = &ops;
@@ -548,7 +548,7 @@ void rt_hw_mtd_nand_init(void)
     _partition[1].pages_per_block = 64;
     _partition[1].block_total = 2048 - _partition[0].block_total;
     _partition[1].oob_size    = 64;
-    _partition[1].oob_free    = 60;
+    _partition[1].oob_free    = 60; //oob_free = oob_size - ecc_size
     _partition[1].block_start = _partition[0].block_end + 1;
     _partition[1].block_end   = 2047;
     _partition[1].ops         = &ops;
